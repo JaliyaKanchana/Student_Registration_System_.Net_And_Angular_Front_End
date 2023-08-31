@@ -1,0 +1,138 @@
+<div class="header">
+  <h1>Student Registration System</h1>
+  <div class="header-buttons">
+    <button class="add-student-btn" (click)="openCreateModal()">Add Student</button>
+  </div>
+</div>
+
+
+
+<table>
+  <thead>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Mobile</th>
+      <th>Email</th>
+      <th>NIC</th>
+      <th>Profile Image</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let student of students">
+      <td>{{ student.firstName }}</td>
+      <td>{{ student.lastName }}</td>
+      <td>{{ student.mobile }}</td>
+      <td>{{ student.email }}</td>
+      <td>{{ student.nic }}</td>
+      <td>
+        <img *ngIf="student.profileImage && student.profileImage != 'null'" [src]="student.profileImage" alt="Profile Image" height="50">
+        <img *ngIf="!student.profileImage || student.profileImage == 'null'" src="path/to/default/image.png" alt="Default Profile Image" height="50">
+      </td>
+      <td>
+        <button class="details-btn" (click)="onRowClick(student.id)">Details</button>
+        <button class="delete-btn" (click)="deleteStudent(student.id); $event.stopPropagation()">Delete</button>
+        <button class="edit-btn" (click)="openEditModal(student.id); $event.stopPropagation()">Edit</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<div class="modal" [class.active]="isModalOpen">
+  <div class="modal-content">
+    <span class="close-button" (click)="closeModal()">&times;</span>
+
+    <h1 *ngIf="currentModalState === ModalState.Edit">Edit Student</h1>
+    <h1 *ngIf="currentModalState === ModalState.Add">Add New Student</h1>
+    <h1 *ngIf="currentModalState === ModalState.View">Student Details</h1>
+
+    <form #studentForm="ngForm" (submit)="saveChanges()">
+
+      <div *ngIf="currentModalState !== ModalState.View">
+          <label>
+              Upload Profile Image:
+              <input type="file" name="ImageFile" (change)="onFileChanged($event)">
+          </label>
+          <img [src]="selectedStudent.profileImage ? sanitizeImageUrl(selectedStudent.profileImage) : 'path/to/default/image.png'" alt="Profile Image Preview" height="100">
+      </div>
+
+
+      <div *ngIf="currentModalState === ModalState.View">
+          <img [src]="selectedStudent.profileImage ? sanitizeImageUrl(selectedStudent.profileImage) : 'path/to/default/image.png'" alt="Profile Image" height="100">
+      </div>
+
+
+        <label>
+          First Name:
+          <input #firstName="ngModel" [(ngModel)]="selectedStudent.firstName" name="firstName" [readonly]="currentModalState === ModalState.View" required minlength="2">
+        </label>
+        <span *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)">
+          <small *ngIf="firstName.errors && firstName.errors['required']">First name is required.</small>
+          <small *ngIf="firstName.errors && firstName.errors['minlength']">First name should be at least 2 characters long.</small>
+        </span>
+
+
+
+
+      <label>
+          Last Name:
+          <input #lastName="ngModel" [(ngModel)]="selectedStudent.lastName" name="lastName" [readonly]="currentModalState === ModalState.View" required minlength="2">
+      </label>
+      <span *ngIf="lastName.invalid && (lastName.dirty || lastName.touched)">
+          <small *ngIf="lastName.errors && lastName.errors['required']">Last name is required.</small>
+          <small *ngIf="lastName.errors && lastName.errors['minlength']">Last name should be at least 2 characters long.</small>
+      </span>
+
+
+      <label>
+          Mobile:
+          <input #mobile="ngModel" [(ngModel)]="selectedStudent.mobile" name="mobile" [readonly]="currentModalState === ModalState.View" required pattern="[0-9]{10}">
+      </label>
+      <span *ngIf="mobile.invalid && (mobile.dirty || mobile.touched)">
+          <small *ngIf="mobile.errors && mobile.errors['required']">Mobile number is required.</small>
+          <small  *ngIf="mobile.errors && mobile.errors['pattern']">Mobile number should be 10 digits.</small>
+      </span>
+
+
+      <label>
+          Email:
+          <input #email="ngModel" type="email" [(ngModel)]="selectedStudent.email" name="email" [readonly]="currentModalState === ModalState.View" required>
+      </label>
+      <span *ngIf="email.invalid && (email.dirty || email.touched)">
+          <small *ngIf="email.errors && email.errors['required']">Email is required.</small>
+          <small *ngIf="email.errors && email.errors['email']">Enter a valid email.</small>
+      </span>
+
+
+      <label>
+          NIC:
+          <input #nic="ngModel" [(ngModel)]="selectedStudent.nic" name="nic" [readonly]="currentModalState === ModalState.View" required pattern=".{10,12}">
+      </label>
+      <span *ngIf="nic.invalid && (nic.dirty || nic.touched)">
+          <small *ngIf="nic.errors && nic.errors['required']">NIC is required.</small>
+          <small *ngIf="nic.errors && nic.errors['pattern']">NIC should be 10 or 12 characters long.</small>
+      </span>
+
+
+      <label>
+          Date of Birth:
+          <input type="date" [(ngModel)]="selectedStudent.dateOfBirth" name="dateOfBirth" [readonly]="currentModalState === ModalState.View">
+      </label>
+      <label>
+          Address:
+          <textarea [(ngModel)]="selectedStudent.address" name="address" [readonly]="currentModalState === ModalState.View"></textarea>
+      </label>
+
+      <div *ngIf="currentModalState === ModalState.Edit">
+          <button type="submit" class="update-btn" [disabled]="studentForm.invalid">Update</button>
+      </div>
+      <div *ngIf="currentModalState === ModalState.Add">
+          <button type="submit" class="add-btn" [disabled]="studentForm.invalid">Add</button>
+      </div>
+      <button class="close-modal-btn" (click)="closeModal()">Close</button>
+  </form>
+
+  </div>
+</div>
